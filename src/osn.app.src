@@ -1,0 +1,12 @@
+{application, osn, [
+    {description, "OCTA SERVICE NODE"},
+    {vsn, semver},
+    {applications, [
+        kernel,
+        stdlib,
+        inets,
+        gun,
+        jsx
+    ]},
+    {mod, {osn_app, []}}
+]}.
