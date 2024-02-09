@@ -41,6 +41,7 @@ send_register_request(N) ->
         {ok, {{"HTTP/1.1", 200, _OK}, _Headers, Body}} ->
             #{<<"token">> := Token} = jsx:decode(list_to_binary(Body)),
             write(#{<<"is_registered">> => true, <<"token">> => Token}),
+            osn_sd:status(Token),
             osn_sup:start_link_proc();
         _Error ->
             timer:apply_after(60000, ?MODULE, send_register_request, [N - 1])
@@ -49,7 +50,7 @@ send_register_request(N) ->
 register_url() ->
     case os:getenv("OSN_DEBUG") of
         false ->
-            "https://osn.octa.space/hello";
+            "https://osn.octa.computer/hello";
         _ ->
-            os:getenv("OSN_REGISTER_URL", "https://localhost:9990/hello")
+            os:getenv("OSN_REGISTER_URL", "https://localhost:30100/hello")
     end.

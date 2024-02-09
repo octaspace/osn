@@ -13,6 +13,7 @@ start(_StartType, _StartArgs) ->
             osn_ident:start(),
             collect_docker_info(),
             set_common_config(),
+            osn_sd:ready(),
             Sup;
         Error -> Error
     end.

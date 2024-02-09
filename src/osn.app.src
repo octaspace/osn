@@ -5,8 +5,10 @@
         kernel,
         stdlib,
         inets,
+        os_mon,
         gun,
-        jsx
+        jsx,
+        docker
     ]},
     {mod, {osn_app, []}}
 ]}.

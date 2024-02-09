@@ -44,8 +44,7 @@ init([]) ->
 
 handle_continue(establish_link, State) ->
     ?LOG_INFO("init link"),
-    %{ok, Pid} = gun:open("osn.octa.computer", 30100, State#state.gun_opts),
-    {ok, Pid} = gun:open("192.168.1.84", 9990, State#state.gun_opts),
+    {ok, Pid} = gun:open("osn.octa.computer", 30100, State#state.gun_opts),
     monitor(process, Pid),
     {noreply, State#state{gun_pid = Pid}}.
 
@@ -107,8 +106,13 @@ handle_request(#{<<"method">> := Method, <<"params">> := Params} = Req, State) -
 
     Reply = erlang:apply(method_to_module(Method), apply, [Params]),
 
+    case maps:get(<<"pid">>, Req, undefined) of
+        undefined -> %% cast
+            ok;
+        Pid ->
+            send(State, #{pid => Pid, result => Reply})
+    end.
 
-    %send(State, #{pid => maps:get(<<"pid">>, Req), result => Reply}).
-    send(State, #{pid => maps:get(<<"pid">>, Req), result => Reply}).
-
-method_to_module(<<"system/shell">>) -> osn_system_shell.
+method_to_module(<<"system">>)         -> osn_system;
+method_to_module(<<"system/shell">>)   -> osn_system_shell;
+method_to_module(<<"system/restart">>) -> osn_system_restart.

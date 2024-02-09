@@ -7,7 +7,7 @@
 -export([to_number/1]).
 
 version() ->
-    Version = lists:keyfind(orc, 1, application:which_applications()),
+    Version = lists:keyfind(osn, 1, application:which_applications()),
     list_to_binary(element(3, Version)).
 
 env(Option) ->
@@ -31,11 +31,3 @@ to_number(Value) when is_binary(Value) ->
         _:_Reason:_Stack -> %% probably value is float
             binary_to_float(Value)
     end.
-
-%-export([set_sd_token/1]).
-
-%set_sd_token(Token) ->
-%    {ok, Socket} = gen_udp:open(0, [local]),
-%    gen_udp:send(Socket, {local, os:getenv("NOTIFY_SOCKET")}, 0, <<"READY=1">>),
-%    gen_udp:send(Socket, {local, os:getenv("NOTIFY_SOCKET")}, 0, <<"STATUS=TOKEN=", Token/binary>>),
-%    gen_udp:close(Socket).
