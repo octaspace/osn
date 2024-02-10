@@ -35,7 +35,7 @@ init(Opts) ->
         gun_opts = #{
             protocols => [http],
             transport => tls,
-            ws_opts => #{keepalive => 5000},
+            ws_opts => #{keepalive => 60000},
             tls_opts => [
                 {certfile, filename:join([PrivDir, "osn-crt.pem"])},
                 {keyfile, filename:join([PrivDir, "osn-key.pem"])},
