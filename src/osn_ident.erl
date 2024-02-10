@@ -4,6 +4,8 @@
 -export([fetch/0]).
 -export([send_register_request/1]).
 
+-include_lib("kernel/include/logger.hrl").
+
 -define(IDENT_FILE, "osn.ident").
 
 start() ->
@@ -13,7 +15,7 @@ fetch() ->
     case file:read_file(?IDENT_FILE) of
         {ok, Data} ->
             binary_to_term(Data);
-        _ -> #{}
+        _ -> undefined
     end.
 
 write(Data) ->
@@ -21,13 +23,15 @@ write(Data) ->
 
 check_is_registered() ->
     case fetch() of
-        #{<<"is_registered">> := true} ->
-            osn_sup:start_link_proc();
-        _Data ->
-            send_register_request(10)
+        undefined ->
+            osn_sd:set_status(<<"Request node registration token...">>),
+            send_register_request(10);
+        Data ->
+            osn_sup:start_link_proc(Data)
     end.
 
-send_register_request(0) -> ok;
+send_register_request(0) ->
+    osn_sd:set_status(<<"Can't request node token">>);
 send_register_request(N) ->
     PrivDir = code:priv_dir(osn),
     HTTPOpts = [
@@ -37,12 +41,13 @@ send_register_request(N) ->
             {verify, verify_none}
         ]}
     ],
+    ?LOG_INFO("attempt request node token, n: ~p", [N]),
     case httpc:request(get, {register_url(), []}, HTTPOpts, []) of
         {ok, {{"HTTP/1.1", 200, _OK}, _Headers, Body}} ->
-            #{<<"token">> := Token} = jsx:decode(list_to_binary(Body)),
-            write(#{<<"is_registered">> => true, <<"token">> => Token}),
-            osn_sd:status(Token),
-            osn_sup:start_link_proc();
+            #{<<"token">> := Token} = Data = jsx:decode(list_to_binary(Body)),
+            write(Data),
+            osn_sd:set_token(Token),
+            osn_sup:start_link_proc(Data);
         _Error ->
             timer:apply_after(60000, ?MODULE, send_register_request, [N - 1])
     end.

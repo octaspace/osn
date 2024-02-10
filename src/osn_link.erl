@@ -2,7 +2,7 @@
 
 -behaviour(gen_server).
 
--export([start_link/0]).
+-export([start_link/1]).
 
 -export([init/1]).
 -export([handle_call/3]).
@@ -13,22 +13,25 @@
 
 -include_lib("kernel/include/logger.hrl").
 
--define(MAX_AUTH_FAILED, 10).
--define(RECONNECT_TIMEOUT, 2000).
-
 -record(state, {
-    gun_pid   :: undefined | pid(),
-    gun_opts  :: map(),
-    ws_stream :: undefined | reference(),
-    fcc = 0   :: pos_integer()
+    gun_pid               :: undefined | pid(),
+    gun_opts              :: map(),
+    ws_stream             :: undefined | reference(),
+    fcc = 0               :: pos_integer(),
+    token                 :: binary(),
+    connect_attempts = 10 :: pos_integer(),
+    connect_timeout = 300 :: pos_integer()
 }).
 
-start_link() ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+start_link(Opts) ->
+    gen_server:start_link({local, ?MODULE}, ?MODULE, Opts, []).
 
-init([]) ->
+init(Opts) ->
     PrivDir = code:priv_dir(osn),
     State = #state{
+        token            = maps:get(<<"token">>, Opts),
+        connect_attempts = maps:get(<<"attempts">>, Opts),
+        connect_timeout  = maps:get(<<"timeout">>, Opts),
         gun_opts = #{
             protocols => [http],
             transport => tls,
@@ -43,20 +46,19 @@ init([]) ->
     {ok, State, {continue, establish_link}}.
 
 handle_continue(establish_link, State) ->
-    ?LOG_INFO("init link"),
+    ?LOG_INFO("init link, auth attempts: ~p, timeout: ~p", [
+        State#state.connect_attempts, State#state.connect_timeout
+    ]),
     {ok, Pid} = gun:open("osn.octa.computer", 30100, State#state.gun_opts),
     monitor(process, Pid),
     {noreply, State#state{gun_pid = Pid}}.
 
-handle_call(_Req, _From, State) ->
-    {reply, ok, State}.
-
+handle_call(_Req, _From, State) -> {reply, ok, State}.
 handle_cast(_Req, State) -> {noreply, State}.
 
 handle_info({gun_up, _Pid, _Protocol}, State) ->
     ?LOG_INFO("link is up, upgrading protocol to websocket"),
-    #{<<"token">> := Token} = osn_ident:fetch(),
-    gun:ws_upgrade(State#state.gun_pid, "/", [{<<"authorization">>, Token}]),
+    gun:ws_upgrade(State#state.gun_pid, "/", [{<<"authorization">>, State#state.token}]),
     {noreply, State};
 
 handle_info({gun_upgrade, _Pid, StreamRef, _, _}, State) ->
@@ -69,13 +71,13 @@ handle_info({gun_ws, _Pid, _Ref, {text, Req}}, State) ->
 
 handle_info({gun_response, _Pid, _, _, 401, _Headers}, #state{fcc = FCC} = State) ->
     ?LOG_ERROR("authentication failed, fcc: ~p", [State#state.fcc]),
-    case FCC =:= ?MAX_AUTH_FAILED of
+    case FCC =:= State#state.connect_attempts of
         true ->
             ?LOG_INFO("max fcc is exceed, stop link process"),
             {stop, normal, State};
         false ->
             gun:close(State#state.gun_pid),
-            timer:sleep(?RECONNECT_TIMEOUT),
+            timer:sleep(timer:seconds(State#state.connect_timeout)),
             {noreply, State#state{fcc = FCC + 1}}
     end;
 
