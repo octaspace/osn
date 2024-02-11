@@ -69,7 +69,7 @@ handle_info({gun_ws, _Pid, _Ref, {text, Req}}, State) ->
     spawn(fun() -> handle_request(jsx:decode(Req), State) end),
     {noreply, State};
 
-handle_info({gun_response, _Pid, _, _, 401, _Headers}, #state{fcc = FCC} = State) ->
+handle_info({gun_response, _Pid, _, _, Code, _Headers}, #state{fcc = FCC} = State) when Code =:= 401; Code =:= 404 ->
     ?LOG_ERROR("authentication failed, fcc: ~p", [State#state.fcc]),
     case FCC =:= State#state.connect_attempts of
         true ->
