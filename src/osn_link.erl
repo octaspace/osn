@@ -106,15 +106,24 @@ send(#state{gun_pid = Pid, ws_stream = Stream} = _State, Message) ->
 handle_request(#{<<"method">> := Method, <<"params">> := Params} = Req, State) ->
     ?LOG_DEBUG("handle request, method: ~p, params: ~p", [Method, Params]),
 
-    Reply = erlang:apply(method_to_module(Method), apply, [Params]),
+    Reply =
+        case erlang:apply(method_to_module(Method), apply, [Method, Params]) of
+            {error, Reason} ->
+                #{<<"error">> => Reason};
+            Result ->
+                #{<<"result">> => Result}
+        end,
 
     case maps:get(<<"pid">>, Req, undefined) of
         undefined -> %% cast
             ok;
         Pid ->
-            send(State, #{pid => Pid, result => Reply})
+            send(State, Reply#{pid => Pid})
     end.
 
 method_to_module(<<"system">>)         -> osn_system;
 method_to_module(<<"system/shell">>)   -> osn_system_shell;
-method_to_module(<<"system/restart">>) -> osn_system_restart.
+
+method_to_module(<<"docker/containers/ls">>) -> osn_docker;
+method_to_module(<<"docker/images">>) -> osn_docker;
+method_to_module(<<"docker/pull">>) -> osn_docker.

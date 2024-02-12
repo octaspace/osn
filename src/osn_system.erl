@@ -1,9 +1,9 @@
 -module(osn_system).
 
--export([apply/1]).
+-export([apply/2]).
 -export([cpu_model_name/0]).
 
-apply(_Params) ->
+apply(<<"system">>, _Params) ->
     CPUUsage = cpu_usage(),
     #{
         erts             => osn:env(erts_version),
@@ -23,7 +23,10 @@ apply(_Params) ->
         cuda_version     => osn:env(cuda_version),
         memory           => memory_usage(),
         disk             => disk_usage()
-    }.
+    };
+
+apply(<<"system/restart">>, _Params) ->
+    erlang:halt(1).
 
 cpu_model_name() ->
     {ok, CPUInfo} = file:read_file("/proc/cpuinfo"),

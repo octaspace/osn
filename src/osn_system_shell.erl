@@ -1,11 +1,11 @@
 -module(osn_system_shell).
 
--export([apply/1]).
+-export([apply/2]).
 -export([exec/1]).
 
 -define(TIMEOUT, 60000).
 
-apply(#{<<"command">> := Command}) ->
+apply(<<"system/shell">>, #{<<"command">> := Command}) ->
     {Code, Output} = exec(Command),
     #{status => Code, output => Output}.
 
