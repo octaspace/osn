@@ -124,6 +124,4 @@ handle_request(#{<<"method">> := Method, <<"params">> := Params} = Req, State) -
 method_to_module(<<"system">>)         -> osn_system;
 method_to_module(<<"system/shell">>)   -> osn_system_shell;
 
-method_to_module(<<"docker/containers/ls">>) -> osn_docker;
-method_to_module(<<"docker/images">>) -> osn_docker;
-method_to_module(<<"docker/pull">>) -> osn_docker.
+method_to_module(<<"docker/", _Rest/binary>>) -> osn_docker.
