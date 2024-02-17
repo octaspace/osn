@@ -76,4 +76,36 @@ apply(<<"docker/run">>, #{<<"Name">> := Name} = Params) ->
     else
         {ok, _Code, Error} -> {error, Error};
         Error -> Error
+    end;
+
+apply(<<"docker/exec">>, #{<<"Name">> := Name, <<"Cmd">> := Command} = Params) ->
+    Envs = maps:fold(
+        fun(K, V, Acc) ->
+            [<<K/binary, "=", (osn:to_binary(V))/binary>> | Acc]
+        end,
+        [],
+        maps:get(<<"Envs">>, Params, #{})
+    ),
+    TTY = maps:get(<<"Tty">>, Params, true),
+    Detach = maps:get(<<"Detach">>, Params, false),
+    Args = #{
+        <<"Cmd">> =>
+            case is_binary(Command) of
+                true ->
+                    binary:split(Command, <<$\s>>, [global]);
+                false ->
+                    Command
+            end,
+        <<"AttachStdin">>  => false,
+        <<"AttachStdout">> => true,
+        <<"AttachStderr">> => true,
+        <<"Tty">>          => TTY,
+        <<"Env">>          => Envs
+    },
+    maybe
+        {ok, 201, #{<<"Id">> := Id}} ?= docker:p(<<"/containers/", Name/binary, "/exec">>, Args),
+        {ok, 200, Data} ?= docker:p(<<"/exec/", Id/binary, "/start">>, #{<<"Tty">> => TTY, <<"Detach">> => Detach}, ?TIMEOUT),
+        Data
+    else
+        {ok, _Code, Error} -> {error, Error}
     end.
