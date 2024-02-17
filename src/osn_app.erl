@@ -77,6 +77,7 @@ set_common_config() ->
             "aarch64-unknown-linux-gnu" -> aarch64;
             _                           -> unknown
     end,
+    detect_virt(),
     detect_linux_distro(),
     persistent_term:put({config, system_arch}, Arch),
     persistent_term:put({config, erts_version}, list_to_binary(erlang:system_info(version))),
@@ -97,3 +98,7 @@ detect_linux_distro() ->
         {config, is_hive_os},  
         (binary:part(NewKernel, {byte_size(NewKernel), -6}) =:= <<"hiveos">> orelse filelib:is_regular("/etc/hiveos-release"))
     ).
+
+detect_virt() ->
+    {0, Virt} = osn_system_shell:exec("systemd-detect-virt"),
+    persistent_term:put({config, virt}, string:trim(Virt)).

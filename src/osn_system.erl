@@ -15,6 +15,7 @@ apply(<<"system">>, _Params) ->
         kernel_version   => osn:env(kernel_version),
         is_hive_os       => osn:env(is_hive_os),
         is_wsl           => osn:env(is_wsl),
+        virt             => osn:env(virt),
         arch             => osn:env(system_arch),
         cpu              => CPUUsage,
         cpu_load_percent => cpu_load_percent(CPUUsage),
