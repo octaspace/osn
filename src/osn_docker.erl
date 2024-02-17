@@ -42,6 +42,31 @@ apply(<<"docker/logs">>, #{<<"Name">> := Name} = Params) ->
             {error, Message}
     end;
 
+apply(<<"docker/stop">>, #{<<"Name">> := Name} = _Params) ->
+    case docker:p(<<"/containers/", Name/binary, "/stop">>, #{}, ?TIMEOUT) of
+        {ok, Code, _Message} when Code =:= 204; Code =:= 304 ->
+            #{};
+        {ok, _Code, Message} ->
+            {error, Message}
+    end;
+
+apply(<<"docker/remove">>, #{<<"Name">> := Name} = _Params) ->
+    docker:d(<<"/containers/", Name/binary>>, ?TIMEOUT),
+    #{};
+
+apply(<<"docker/kill">>, #{<<"Name">> := Name} = _Params) ->
+    docker:p(<<"/containers/", Name/binary, "/kill">>, #{}, ?TIMEOUT),
+    #{};
+
+apply(<<"docker/stats">>, #{<<"Name">> := Name} = _Params) ->
+    Opts = [{<<"stream">>, <<"false">>}, {<<"one-shot">>, <<"true">>}],
+    case docker:g({<<"/containers/", Name/binary, "/stats">>, Opts}, ?TIMEOUT) of
+        {ok, 200, Message} ->
+            Message;
+        {ok, _Code, Message} ->
+            {error, Message}
+    end;
+
 apply(<<"docker/run">>, #{<<"Name">> := Name} = Params) ->
     maybe
         #{} ?= apply(<<"docker/pull">>, Params),
