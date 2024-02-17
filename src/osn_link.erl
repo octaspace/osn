@@ -100,25 +100,31 @@ handle_info(Msg, State) ->
 terminate(_Reason, State) ->
     gun:close(State#state.gun_pid).
 
-send(#state{gun_pid = Pid, ws_stream = Stream} = _State, Message) ->
-    gun:ws_send(Pid, Stream, {text, jsx:encode(Message)}).
+send(#state{gun_pid = Pid, ws_stream = Stream} = _State, Req, Message) ->
+    case maps:get(<<"pid">>, Req, undefined) of
+        undefined -> %% cast
+            ok;
+        ReqPid ->
+            gun:ws_send(Pid, Stream, {text, jsx:encode(Message#{pid => ReqPid})})
+    end.
 
 handle_request(#{<<"method">> := Method, <<"params">> := Params} = Req, State) ->
     ?LOG_DEBUG("handle request, method: ~p, params: ~p", [Method, Params]),
 
-    Reply =
-        case erlang:apply(method_to_module(Method), apply, [Method, Params]) of
-            {error, Reason} ->
-                #{<<"error">> => Reason};
-            Result ->
-                #{<<"result">> => Result}
-        end,
+    try
 
-    case maps:get(<<"pid">>, Req, undefined) of
-        undefined -> %% cast
-            ok;
-        Pid ->
-            send(State, Reply#{pid => Pid})
+        Reply =
+            case erlang:apply(method_to_module(Method), apply, [Method, Params]) of
+                {error, Reason} ->
+                    #{<<"error">> => Reason};
+                Result ->
+                    #{<<"result">> => Result}
+            end,
+        send(State, Req, Reply)
+    catch
+        _:Reason0:Stack ->
+            Message = iolist_to_binary(io_lib:format("~p", [Reason0])),
+            send(State, Req, #{<<"error">> => Message})
     end.
 
 method_to_module(<<"system">>)         -> osn_system;
