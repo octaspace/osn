@@ -4,44 +4,31 @@
 
 %% API
 -export([start_link/0]).
--export([start/1]).
+-export([apply/2]).
 
 %% gen_server callbacks
 -export([init/1]).
 -export([handle_call/3]).
 -export([handle_cast/2]).
--export([terminate/2]).
 
 -include_lib("kernel/include/logger.hrl").
-
--type rules() :: #{
-    open_tcp_ports := [inet:port_number()],
-    open_udp_ports := [inet:port_number()],
-    timeout        := timeout()
-}.
-
--export_type([rules/0]).
-
--record(state, {rules :: undefined | rules()}).
 
 start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
-start(Rules) ->
-    gen_server:call(?MODULE, {start, Rules}).
+apply(<<"vrf/start">>, Params) ->
+    gen_server:call(?MODULE, {start, Params}),
+    #{}.
 
-init([]) ->
-    {ok, #state{}}.
+init([]) -> {ok, []}.
 
 handle_cast(_Msg, State) -> {noreply, State}.
 
-handle_call({start, Rules}, _From, State) ->
-    ?LOG_INFO("verification start, rules: ~p", [Rules]),
-    start_tcp_servers(Rules),
-    start_udp_servers(Rules),
-    {reply, ok, State#state{rules = Rules}}.
-
-terminate(_Reason, _State) -> ok.
+handle_call({start, Params}, _From, State) ->
+    ?LOG_INFO("verification start, Params: ~p", [Params]),
+    start_tcp_servers(Params),
+    start_udp_servers(Params),
+    {reply, ok, State}.
 
 start_tcp_servers(#{<<"open_tcp_ports">> := Ports, <<"timeout">> := Timeout}) ->
     lists:foreach(fun(Port) -> tcp_server(Port, Timeout) end, Ports).

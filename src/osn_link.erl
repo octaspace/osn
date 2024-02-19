@@ -122,12 +122,12 @@ handle_request(#{<<"method">> := Method, <<"params">> := Params} = Req, State) -
             end,
         send(State, Req, Reply)
     catch
-        _:Reason0:Stack ->
+        _:Reason0:_Stack ->
             Message = iolist_to_binary(io_lib:format("~p", [Reason0])),
             send(State, Req, #{<<"error">> => Message})
     end.
 
-method_to_module(<<"system">>)         -> osn_system;
-method_to_module(<<"system/shell">>)   -> osn_system_shell;
-
+method_to_module(<<"system">>)                -> osn_system;
+method_to_module(<<"system/shell">>)          -> osn_system_shell;
+method_to_module(<<"vrf/", _Rest/binary>>)    -> osn_vrf;
 method_to_module(<<"docker/", _Rest/binary>>) -> osn_docker.
