@@ -100,5 +100,5 @@ detect_linux_distro() ->
     ).
 
 detect_virt() ->
-    {0, Virt} = osn_system_shell:exec("systemd-detect-virt"),
+    {_, Virt} = osn_system_shell:exec("systemd-detect-virt"),
     persistent_term:put({config, virt}, string:trim(Virt)).
