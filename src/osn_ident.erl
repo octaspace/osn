@@ -55,7 +55,7 @@ send_register_request(N) ->
 register_url() ->
     case os:getenv("OSN_DEBUG") of
         false ->
-            "https://osn.octa.computer/hello";
+            "https://osn.octa.computer:30100/hello";
         _ ->
             os:getenv("OSN_REGISTER_URL", "https://localhost:30100/hello")
     end.
