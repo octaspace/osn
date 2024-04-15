@@ -49,7 +49,8 @@ handle_continue(establish_link, State) ->
     ?LOG_INFO("init link, auth attempts: ~p, timeout: ~p", [
         State#state.connect_attempts, State#state.connect_timeout
     ]),
-    {ok, Pid} = gun:open("osn.octa.computer", 30100, State#state.gun_opts),
+    %{ok, Pid} = gun:open("osn.octa.computer", 30100, State#state.gun_opts),
+    {ok, Pid} = gun:open("localhost", 30100, State#state.gun_opts),
     monitor(process, Pid),
     {noreply, State#state{gun_pid = Pid}}.
 
@@ -129,5 +130,6 @@ handle_request(#{<<"method">> := Method, <<"params">> := Params} = Req, State) -
 
 method_to_module(<<"system">>)                -> osn_system;
 method_to_module(<<"system/shell">>)          -> osn_system_shell;
+method_to_module(<<"system/upgrade">>)        -> osn_system_upgrade;
 method_to_module(<<"vrf/", _Rest/binary>>)    -> osn_vrf;
 method_to_module(<<"docker/", _Rest/binary>>) -> osn_docker.
