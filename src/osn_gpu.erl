@@ -7,7 +7,7 @@
 -include_lib("kernel/include/logger.hrl").
 
 info(nvidia) ->
-    Args = "--query-gpu=index,name,driver_version,pstate,pcie.link.gen.max,pcie.link.gen.current,temperature.gpu,utilization.gpu,utilization.memory,memory.total,memory.free,display_mode,display_active,fan.speed,power.limit --format=csv,nounits,noheader",
+    Args = "--query-gpu=index,name,driver_version,pstate,pcie.link.gen.max,pcie.link.gen.current,temperature.gpu,utilization.gpu,memory.total,memory.free,display_mode,display_active,fan.speed,power.limit --format=csv,nounits,noheader",
     gpu_info(lookup_nvidia_smi() ++ " " ++ Args, nvidia);
 
 info(amd) -> gpu_info("./clinfo " ++ "--json", amd).
@@ -48,7 +48,6 @@ parse_output(Data, nvidia) ->
                 PCIELinkCurrent,
                 TempGPU,
                 UtilizationGPU,
-                UtilizationMem,
                 MemTotal,
                 MemFree,
                 DisplayMode,
@@ -65,7 +64,6 @@ parse_output(Data, nvidia) ->
                 pcie_link_current => osn:to_number(PCIELinkCurrent),
                 gpu_temperature   => osn:to_number(TempGPU),
                 gpu_utilization   => osn:to_number(UtilizationGPU),
-                mem_utilization   => osn:to_number(UtilizationMem),
                 mem_total_mb      => osn:to_number(MemTotal),
                 mem_free_mb       => osn:to_number(MemFree),
                 display_mode      => DisplayMode,
