@@ -12,7 +12,7 @@ jobs:
       ImageOS: ubuntu24
     steps:
       - uses: actions/checkout@v4
-      - uses: erlef/setup-beam
+      - uses: erlef/setup-beam@main
         with:
           otp-version: '26'
           rebar3-version: '3.16.1'
