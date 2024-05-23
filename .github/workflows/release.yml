@@ -21,7 +21,7 @@ jobs:
           tar zcf osn-${GITHUB_REF_NAME#v}-ubuntu-noble-x86_64.tar.gz -C _build/prod/rel/ osn
           md5sum osn-${GITHUB_REF_NAME#v}-ubuntu-noble-x86_64.tar.gz | cut -f1 -d ' ' > osn-${GITHUB_REF_NAME#v}-ubuntu-noble-x86_64.md5sum
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             osn-*
@@ -38,7 +38,7 @@ jobs:
           tar zcf osn-${GITHUB_REF_NAME#v}-ubuntu-jammy-x86_64.tar.gz -C _build/prod/rel/ osn
           md5sum osn-${GITHUB_REF_NAME#v}-ubuntu-jammy-x86_64.tar.gz | cut -f1 -d ' ' > osn-${GITHUB_REF_NAME#v}-ubuntu-jammy-x86_64.md5sum
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             osn-*
@@ -55,7 +55,7 @@ jobs:
           tar zcf osn-${GITHUB_REF_NAME#v}-ubuntu-focal-x86_64.tar.gz -C _build/prod/rel/ osn
           md5sum osn-${GITHUB_REF_NAME#v}-ubuntu-focal-x86_64.tar.gz | cut -f1 -d ' ' > osn-${GITHUB_REF_NAME#v}-ubuntu-focal-x86_64.md5sum
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             osn-*
