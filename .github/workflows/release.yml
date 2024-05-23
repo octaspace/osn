@@ -18,9 +18,8 @@ jobs:
           rebar3-version: '3.16.1'
       - run: |
           rebar3 as prod release
-          strip _build/prod/rel/osn/erts-*/bin/* || true
-          tar jcf osn-${GITHUB_REF_NAME#v}-ubuntu-noble-x86_64.tar.bz2 -C _build/prod/rel/ osn
-          md5sum osn-${GITHUB_REF_NAME#v}-ubuntu-noble-x86_64.tar.bz2 | cut -f1 -d ' ' > osn-${GITHUB_REF_NAME#v}-ubuntu-noble-x86_64.md5sum
+          tar zcf osn-${GITHUB_REF_NAME#v}-ubuntu-noble-x86_64.tar.gz -C _build/prod/rel/ osn
+          md5sum osn-${GITHUB_REF_NAME#v}-ubuntu-noble-x86_64.tar.gz | cut -f1 -d ' ' > osn-${GITHUB_REF_NAME#v}-ubuntu-noble-x86_64.md5sum
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
@@ -36,9 +35,8 @@ jobs:
           rebar3-version: '3.16.1'
       - run: |
           rebar3 as prod release
-          strip _build/prod/rel/osn/erts-*/bin/* || true
-          tar jcf osn-${GITHUB_REF_NAME#v}-ubuntu-jammy-x86_64.tar.bz2 -C _build/prod/rel/ osn
-          md5sum osn-${GITHUB_REF_NAME#v}-ubuntu-jammy-x86_64.tar.bz2 | cut -f1 -d ' ' > osn-${GITHUB_REF_NAME#v}-ubuntu-jammy-x86_64.md5sum
+          tar zcf osn-${GITHUB_REF_NAME#v}-ubuntu-jammy-x86_64.tar.gz -C _build/prod/rel/ osn
+          md5sum osn-${GITHUB_REF_NAME#v}-ubuntu-jammy-x86_64.tar.gz | cut -f1 -d ' ' > osn-${GITHUB_REF_NAME#v}-ubuntu-jammy-x86_64.md5sum
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
@@ -54,9 +52,8 @@ jobs:
           rebar3-version: '3.16.1'
       - run: |
           rebar3 as prod release
-          strip _build/prod/rel/osn/erts-*/bin/* || true
-          tar jcf osn-${GITHUB_REF_NAME#v}-ubuntu-focal-x86_64.tar.bz2 -C _build/prod/rel/ osn
-          md5sum osn-${GITHUB_REF_NAME#v}-ubuntu-focal-x86_64.tar.bz2 | cut -f1 -d ' ' > osn-${GITHUB_REF_NAME#v}-ubuntu-focal-x86_64.md5sum
+          tar zcf osn-${GITHUB_REF_NAME#v}-ubuntu-focal-x86_64.tar.gz -C _build/prod/rel/ osn
+          md5sum osn-${GITHUB_REF_NAME#v}-ubuntu-focal-x86_64.tar.gz | cut -f1 -d ' ' > osn-${GITHUB_REF_NAME#v}-ubuntu-focal-x86_64.md5sum
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
