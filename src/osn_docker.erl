@@ -31,7 +31,7 @@ apply(<<"docker/logs">>, #{<<"Name">> := Name} = Params) ->
     Opts = [
         {<<"stdout">>, <<"true">>},
         {<<"stderr">>, <<"true">>},
-        {<<"timestamps">>, <<"true">>},
+        {<<"timestamps">>, maps:get(<<"timestamps">>, Params, <<"false">>)},
         {<<"follow">>, <<"false">>},
         {<<"tail">>, maps:get(<<"tail">>, Params, <<"all">>)}
     ],
@@ -77,6 +77,10 @@ apply(<<"docker/run">>, #{<<"Name">> := Name} = Params) ->
         {ok, _Code, Error} -> {error, Error};
         Error -> Error
     end;
+
+apply(<<"docker/wait">>, #{<<"Name">> := Name} = _Params) ->
+    docker:p(<<"/containers/", Name/binary, "/wait">>, #{}, ?TIMEOUT),
+    #{};
 
 apply(<<"docker/exec">>, #{<<"Name">> := Name, <<"Cmd">> := Command} = Params) ->
     Envs = maps:fold(
