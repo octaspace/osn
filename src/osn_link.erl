@@ -49,8 +49,13 @@ handle_continue(establish_link, State) ->
     ?LOG_INFO("init link, auth attempts: ~p, timeout: ~p", [
         State#state.connect_attempts, State#state.connect_timeout
     ]),
-    %{ok, Pid} = gun:open("osn.octa.computer", 30100, State#state.gun_opts),
-    {ok, Pid} = gun:open("localhost", 30100, State#state.gun_opts),
+    {ok, Pid} =
+        case os:getenv("OSN_DEBUG") of
+            false ->
+                gun:open("osn.octa.computer", 30100, State#state.gun_opts);
+            _ ->
+                gun:open("localhost", 30100, State#state.gun_opts)
+        end,
     monitor(process, Pid),
     {noreply, State#state{gun_pid = Pid}}.
 
@@ -113,7 +118,6 @@ handle_request(#{<<"method">> := Method, <<"params">> := Params} = Req, State) -
     ?LOG_DEBUG("handle request, method: ~p, params: ~p", [Method, Params]),
 
     try
-
         Reply =
             case erlang:apply(method_to_module(Method), apply, [Method, Params]) of
                 {error, Reason} ->
