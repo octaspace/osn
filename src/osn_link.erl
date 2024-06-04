@@ -129,6 +129,7 @@ handle_request(#{<<"method">> := Method, <<"params">> := Params} = Req, State) -
     end.
 
 method_to_module(<<"system">>)                -> osn_system;
+method_to_module(<<"system/restart">>)        -> osn_system;
 method_to_module(<<"system/shell">>)          -> osn_system_shell;
 method_to_module(<<"system/upgrade">>)        -> osn_system_upgrade;
 method_to_module(<<"vrf/", _Rest/binary>>)    -> osn_vrf;
