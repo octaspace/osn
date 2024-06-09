@@ -27,11 +27,11 @@ release_url(Version) ->
         osn:env(os_linux_release),
         "-",
         atom_to_binary(osn:env(system_arch)),
-        ".tar.bz2"
+        ".tar.gz"
     ]).
 
 download(URL) ->
-    FileName = filename:join([osn:env(cwd), "upgrade.tar.bz2"]),
+    FileName = filename:join([osn:env(cwd), "upgrade.tar.gz"]),
     file:delete(FileName),
     ?LOG_INFO("system upgrade, download release: ~s", [URL]),
     case httpc:request(get, {URL, []}, [], [{sync, true}, {stream, FileName}]) of
