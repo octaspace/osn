@@ -6,6 +6,19 @@ on:
       - main
 
 jobs:
+  ubuntu24-arm64:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          rebar3 as prod release
+          tar zcf osn-${GITHUB_REF_NAME#v}-ubuntu-noble-aarch64.tar.gz -C _build/prod/rel/ osn
+          md5sum osn-${GITHUB_REF_NAME#v}-ubuntu-noble-aarch64.tar.gz | cut -f1 -d ' ' > osn-${GITHUB_REF_NAME#v}-ubuntu-noble-aarch64.md5sum
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            osn-*
   ubuntu24-amd64:
     runs-on: self-hosted
     env:
