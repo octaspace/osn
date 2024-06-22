@@ -7,6 +7,13 @@
 
 -define(TIMEOUT, timer:seconds(3600)).
 
+apply(<<"docker/upload">>, #{<<"Name">> := Name, <<"Path">> := Path, <<"Data">> := Data} = _Params) ->
+    case docker:put({<<"/containers/", Name/binary, "/archive">>, [{<<"path">>, Path}]}, base64:decode(Data)) of
+        {ok, 200, <<>>} -> #{};
+        {ok, _Code, Message} ->
+            {error, Message}
+    end;
+
 apply(<<"docker/containers/ls">>, _Params) ->
     {ok, 200, Containers} = docker:g(<<"/containers/json">>, ?TIMEOUT),
     Containers;
