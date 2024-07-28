@@ -115,7 +115,10 @@ send(#state{gun_pid = Pid, ws_stream = Stream} = _State, Req, Message) ->
     end.
 
 handle_request(#{<<"method">> := Method, <<"params">> := Params} = Req, State) ->
-    ?LOG_DEBUG("handle request, method: ~p, params: ~p", [Method, Params]),
+    case os:getenv("OSN_DEBUG") of
+        false -> ok;
+        _ -> ?LOG_DEBUG("handle request, method: ~p, params: ~p", [Method, Params])
+    end,
 
     try
         Reply =
@@ -134,6 +137,7 @@ handle_request(#{<<"method">> := Method, <<"params">> := Params} = Req, State) -
 
 method_to_module(<<"system">>)                -> osn_system;
 method_to_module(<<"system/restart">>)        -> osn_system;
+method_to_module(<<"system/upload">>)         -> osn_system;
 method_to_module(<<"system/shell">>)          -> osn_system_shell;
 method_to_module(<<"system/upgrade">>)        -> osn_system_upgrade;
 method_to_module(<<"vrf/", _Rest/binary>>)    -> osn_vrf;

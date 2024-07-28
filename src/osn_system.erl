@@ -27,7 +27,16 @@ apply(<<"system">>, _Params) ->
     };
 
 apply(<<"system/restart">>, _Params) ->
-    erlang:halt(1).
+    erlang:halt(1);
+
+apply(<<"system/upload">>, #{<<"filename">> := FileName, <<"data">> := Data} = Params) ->
+    ok = file:write_file(FileName, base64:decode(Data)),
+    case maps:get(<<"mode">>, Params, undefined) of
+        undefined -> ok;
+        Mode ->
+            file:change_mode(FileName, Mode)
+    end,
+    #{}.
 
 cpu_model_name() ->
     {ok, CPUInfo} = file:read_file("/proc/cpuinfo"),
