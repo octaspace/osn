@@ -87,6 +87,12 @@ handle_info({gun_response, _Pid, _, _, Code, _Headers}, #state{fcc = FCC} = Stat
             {noreply, State#state{fcc = FCC + 1}}
     end;
 
+handle_info({gun_response, _Pid, _, _, 503, _Headers}, State) ->
+    ?LOG_ERROR("Can't connect, reason: Service Unavailable"),
+    gun:close(State#state.gun_pid),
+    timer:sleep(60000),
+    {noreply, State};
+
 handle_info({gun_down, _Pid, _Protocol, Reason, _Streams}, State) ->
     ?LOG_ERROR("link is down, reason: ~p", [Reason]),
     {noreply, State};
