@@ -119,4 +119,21 @@ apply(<<"docker/exec">>, #{<<"Name">> := Name, <<"Cmd">> := Command} = Params) -
         Data
     else
         {ok, _Code, Error} -> {error, Error}
+    end;
+
+apply(<<"docker/volume/create">>, Params) ->
+    case docker:p(<<"/volumes/create">>, Params, ?TIMEOUT) of
+        {ok, 201, _Data} -> #{};
+        {ok, _Code, Error} -> {error, Error}
+    end;
+
+apply(<<"docker/volume/ls">>, _Params) ->
+    {ok, 200, #{<<"Volumes">> := Volumes}} = docker:g(<<"/volumes">>, ?TIMEOUT),
+    lists:foldl(fun(#{<<"Name">> := Name}, Acc) -> [Name | Acc] end, [], Volumes);
+
+apply(<<"docker/volume/rm">>, #{<<"Name">> := Name} = _Params) ->
+    case docker:d(<<"/volumes/", Name/binary>>, ?TIMEOUT) of
+        {ok, Code, _Data} when Code =:= 204; Code =:= 404 ->
+            #{};
+        {ok, _Code, Error} -> {error, Error}
     end.
