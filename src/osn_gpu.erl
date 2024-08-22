@@ -1,10 +1,21 @@
 -module(osn_gpu).
 
+-export([setup/0]).
 -export([info/1]).
 -export([parse_output/2]).
 -export([cuda_version/0]).
 
 -include_lib("kernel/include/logger.hrl").
+
+setup() ->
+    persistent_term:put({config, gpu_info_nvidia}, setup(nvidia)),
+    persistent_term:put({config, gpu_info_amd}, setup(amd)).
+
+setup(GPU) ->
+    case info(GPU) of
+        [] -> fun() -> [] end;
+        _Data -> fun() -> info(GPU) end
+    end.
 
 info(nvidia) ->
     Args = "--query-gpu=index,name,driver_version,pstate,pcie.link.gen.max,pcie.link.gen.current,temperature.gpu,utilization.gpu,memory.total,memory.free,display_mode,display_active,fan.speed,power.limit --format=csv,nounits,noheader",

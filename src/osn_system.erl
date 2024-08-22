@@ -89,8 +89,8 @@ disk_usage() ->
 
 gpu_info() ->
     #{
-        nvidia => osn_gpu:info(nvidia),
-        amd    => osn_gpu:info(amd)
+        nvidia => (osn:env(gpu_info_nvidia))(),
+        amd    => (osn:env(gpu_info_amd))()
     }.
 
 cpu_load_percent(Usage) ->
