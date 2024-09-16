@@ -18,6 +18,14 @@ apply(<<"docker/containers/ls">>, _Params) ->
     {ok, 200, Containers} = docker:g(<<"/containers/json">>, ?TIMEOUT),
     Containers;
 
+apply(<<"docker/containers/inspect">>, #{<<"Name">> := Name} = _Params) ->
+    case docker:g(<<"/containers/", Name/binary, "/json">>, ?TIMEOUT) of
+        {ok, 200, Data} ->
+            Data;
+        {ok, _Code, Message} ->
+            {error, Message}
+    end;
+
 apply(<<"docker/images">>, _Params) ->
     {ok, 200, Images} = docker:g(<<"/images/json">>, ?TIMEOUT),
     Images;
