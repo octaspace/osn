@@ -2,6 +2,7 @@
 
 -export([apply/2]).
 -export([cpu_model_name/0]).
+-export([memory_spec/0]).
 
 apply(<<"system">>, _Params) ->
     CPUUsage = cpu_usage(),
@@ -23,6 +24,7 @@ apply(<<"system">>, _Params) ->
         gpu              => gpu_info(),
         cuda_version     => osn:env(cuda_version),
         memory           => memory_usage(),
+        memory_spec      => osn:env(memory_spec),
         disk             => disk_usage()
     };
 
@@ -101,3 +103,25 @@ cpu_load_percent(Usage) ->
             Usage
         ),
     100 - (Total / length(Usage)).
+
+memory_spec() ->
+     {0, Data} = osn_system_shell:exec("sudo dmidecode --type 17 | jc --dmidecode"),
+
+     [#{<<"values">> := #{<<"type">> := Type}} | _Rest] = Spec = jsx:decode(Data),
+     Speed = lists:foldl(
+        fun(#{<<"values">> := #{<<"configured_memory_speed">> := CS}}, Acc) ->
+            try
+                [S, _] = binary:split(CS, <<" ">>),
+                S0 = binary_to_integer(S),
+                case S0 > Acc of
+                    true -> S0;
+                    false -> Acc
+                end
+            catch
+                _:_:_ -> Acc
+            end
+        end,
+        0,
+        Spec
+    ),
+    #{type => Type, speed => Speed}. %% Speed in MT/s
