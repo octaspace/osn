@@ -10,11 +10,11 @@ start(_StartType, _StartArgs) ->
         {ok, _Pid} = Sup ->
             set_cwd(),
             init_logger(),
-            osn_ident:start(),
             collect_docker_info(),
             set_common_config(),
             osn_gpu:setup(),
             osn_sd:ready(),
+            osn_ident:start(),
             Sup;
         Error -> Error
     end.
