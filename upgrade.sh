@@ -3,6 +3,6 @@
 release="/home/octa/osn/upgrade.tar.gz"
 
 if [[ -e $release ]]; then
-    tar jxf $release -C /home/octa
+    tar zxf $release -C /home/octa
     rm $release
 fi
