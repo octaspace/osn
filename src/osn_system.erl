@@ -107,7 +107,13 @@ cpu_load_percent(Usage) ->
 memory_spec() ->
      {0, Data} = osn_system_shell:exec("sudo dmidecode --type 17 | jc --dmidecode"),
 
-     [#{<<"values">> := #{<<"type">> := Type}} | _Rest] = Spec = jsx:decode(Data),
+     %% Filter out empty memory slots
+     MemoryBanks = lists:filter(
+        fun(#{<<"values">> := #{<<"type">> := Value}}) -> Value =/= <<"Unknown">> end,
+        jsx:decode(Data)
+     ),
+
+     #{<<"values">> := #{<<"type">> := Type}} = hd(MemoryBanks),
      Speed = lists:foldl(
         fun(#{<<"values">> := #{<<"configured_memory_speed">> := CS}}, Acc) ->
             try
@@ -122,6 +128,6 @@ memory_spec() ->
             end
         end,
         0,
-        Spec
+        MemoryBanks
     ),
     #{type => Type, speed => Speed}. %% Speed in MT/s
