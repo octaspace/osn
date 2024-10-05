@@ -33,11 +33,11 @@ check_is_registered() ->
 send_register_request(0) ->
     osn_sd:set_status(<<"Can't request node token">>);
 send_register_request(N) ->
-    PrivDir = code:priv_dir(osn),
+    {ok, PWD} = file:get_cwd(),
     HTTPOpts = [
         {ssl, [
-            {certfile, filename:join([PrivDir, "osn-crt.pem"])},
-            {keyfile, filename:join([PrivDir, "osn-key.pem"])},
+            {certfile, filename:join([PWD, "priv", "osn-crt.pem"])},
+            {keyfile, filename:join([PWD, "priv", "osn-key.pem"])},
             {verify, verify_none}
         ]}
     ],
