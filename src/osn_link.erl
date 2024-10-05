@@ -27,7 +27,7 @@ start_link(Opts) ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, Opts, []).
 
 init(Opts) ->
-    PrivDir = code:priv_dir(osn),
+    {ok, PWD} = file:get_cwd(),
     State = #state{
         token            = maps:get(<<"token">>, Opts),
         connect_attempts = maps:get(<<"attempts">>, Opts),
@@ -37,8 +37,8 @@ init(Opts) ->
             transport => tls,
             ws_opts => #{keepalive => 60000},
             tls_opts => [
-                {certfile, filename:join([PrivDir, "osn-crt.pem"])},
-                {keyfile, filename:join([PrivDir, "osn-key.pem"])},
+                {certfile, filename:join([PWD, "priv", "osn-crt.pem"])},
+                {keyfile, filename:join([PWD, "priv", "osn-key.pem"])},
                 {verify, verify_none}
             ]
         }
