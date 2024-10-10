@@ -30,8 +30,8 @@ init(Opts) ->
     {ok, PWD} = file:get_cwd(),
     State = #state{
         token            = maps:get(<<"token">>, Opts),
-        connect_attempts = maps:get(<<"attempts">>, Opts),
-        connect_timeout  = maps:get(<<"timeout">>, Opts),
+        connect_attempts = maps:get(<<"attempts">>, Opts, 10),
+        connect_timeout  = maps:get(<<"timeout">>, Opts, 5),
         gun_opts = #{
             protocols => [http],
             transport => tls,
