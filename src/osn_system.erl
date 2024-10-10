@@ -105,6 +105,14 @@ cpu_load_percent(Usage) ->
     100 - (Total / length(Usage)).
 
 memory_spec() ->
+    memory_spec(osn:env(system_arch)).
+
+memory_spec(aarch64) ->
+    %% TODO: Add check RPI model
+    %% /proc/device-tree/model
+    #{type => <<"LPDDR4X">>}; %% RPI5
+
+memory_spec(_Arch) ->
      {0, Data} = osn_system_shell:exec("sudo dmidecode --type 17 | jc --dmidecode"),
 
      %% Filter out empty memory slots
