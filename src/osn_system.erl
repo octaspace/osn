@@ -20,6 +20,7 @@ apply(<<"system">>, _Params) ->
         arch             => osn:env(system_arch),
         cpu              => CPUUsage,
         cpu_load_percent => cpu_load_percent(CPUUsage),
+        cpu_vendor_id    => osn:env(cpu_vendor_id),
         cpu_model_name   => osn:env(cpu_model_name),
         gpu              => gpu_info(),
         cuda_version     => osn:env(cuda_version),

@@ -80,9 +80,9 @@ set_common_config() ->
     end,
     detect_virt(),
     detect_linux_distro(),
+    osn_cpu:detect(),
     persistent_term:put({config, system_arch}, Arch),
     persistent_term:put({config, erts_version}, list_to_binary(erlang:system_info(version))),
-    persistent_term:put({config, cpu_model_name}, osn_system:cpu_model_name()),
     persistent_term:put({config, memory_spec}, osn_system:memory_spec()),
     persistent_term:put({config, cuda_version}, osn_gpu:cuda_version()).
 
