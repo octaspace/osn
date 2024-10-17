@@ -17,7 +17,7 @@
     gun_pid               :: undefined | pid(),
     gun_opts              :: map(),
     ws_stream             :: undefined | reference(),
-    fcc = 0               :: pos_integer(),
+    fcc = 0               :: non_neg_integer(),
     token                 :: binary(),
     connect_attempts = 10 :: pos_integer(),
     connect_timeout = 300 :: pos_integer()
