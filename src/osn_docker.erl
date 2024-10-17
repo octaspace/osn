@@ -30,16 +30,16 @@ apply(<<"docker/images">>, _Params) ->
     {ok, 200, Images} = docker:g(<<"/images/json">>, ?TIMEOUT),
     Images;
 
-apply(<<"docker/pull">>, #{<<"Image">> := Image} = _Params) ->
+apply(<<"docker/pull">>, #{<<"Image">> := Image} = Params) ->
     case binary:split(Image, <<":">>) of
         [_Name, <<"latest">>] ->
-            pull_image(Image);
+            pull_image(Image, Params);
         _ ->
             Images = apply(<<"docker/images">>, #{}),
             case lists:any(fun(#{<<"RepoTags">> := RT}) -> RT =/= null andalso lists:member(Image, RT) end, Images) of
                 true -> #{};
                 false ->
-                    pull_image(Image)
+                    pull_image(Image, Params)
             end
     end;
 
@@ -147,9 +147,16 @@ apply(<<"docker/volume/rm">>, #{<<"Name">> := Name} = _Params) ->
         {ok, _Code, Error} -> {error, Error}
     end.
 
-pull_image(Image) ->
-    case docker:p({<<"/images/create">>, [{<<"fromImage">>, Image}]}, #{}, ?TIMEOUT) of
-        {ok, 200, _Message} -> #{};
-        {ok, _Code, Message} ->
-            {error, Message}
-    end.
+pull_image(Image, Params) ->
+    case maps:get(<<"Auth">>, Params, undefined) of
+        undefined -> ok;
+        Token -> docker:login(Token)
+    end,
+    Result =
+        case docker:p({<<"/images/create">>, [{<<"fromImage">>, Image}]}, #{}, ?TIMEOUT) of
+            {ok, 200, _Message} -> #{};
+            {ok, _Code, Message} ->
+                {error, Message}
+        end,
+    docker:logout(),
+    Result.
