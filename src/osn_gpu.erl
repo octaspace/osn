@@ -18,7 +18,7 @@ setup(GPU) ->
     end.
 
 info(nvidia) ->
-    Args = "--query-gpu=index,pci.bus_id,name,driver_version,pstate,pcie.link.gen.max,pcie.link.width.max,temperature.gpu,utilization.gpu,memory.total,memory.free,display_mode,display_active,fan.speed,power.limit --format=csv,nounits,noheader",
+    Args = "--query-gpu=index,pci.bus_id,name,driver_version,pstate,pcie.link.gen.max,pcie.link.width.max,temperature.gpu,utilization.gpu,memory.total,memory.free,display_mode,display_active,fan.speed,power.limit,power.default_limit --format=csv,nounits,noheader",
     gpu_info(lookup_nvidia_smi() ++ " " ++ Args, nvidia);
 
 info(amd) -> gpu_info("./clinfo " ++ "--json", amd).
@@ -65,24 +65,26 @@ parse_output(Data, nvidia) ->
                 DisplayMode,
                 DisplayActive,
                 FanSpeed,
-                PowerLimit
+                PowerLimit,
+                PowerLimitDefault
             ] = binary:split(Info, <<", ">>, [trim_all, global]),
             [#{
-                idx               => osn:to_number(Idx),
-                bus_id            => lists:nth(2, binary:split(BusId, <<":">>)),
-                model             => Model,
-                driver_version    => DriverVersion,
-                pstate            => PState,
-                pcie_link_gen     => osn:to_number(PCIELinkGen),
-                pcie_link_width   => osn:to_number(PCIELinkWidth),
-                gpu_temperature   => osn:to_number(TempGPU),
-                gpu_utilization   => osn:to_number(UtilizationGPU),
-                mem_total_mb      => osn:to_number(MemTotal),
-                mem_free_mb       => osn:to_number(MemFree),
-                display_mode      => DisplayMode,
-                display_active    => DisplayActive,
-                fan_speed         => osn:to_number(FanSpeed),
-                power_limit_watt  => osn:to_number(PowerLimit)
+                idx                      => osn:to_number(Idx),
+                bus_id                   => lists:nth(2, binary:split(BusId, <<":">>)),
+                model                    => Model,
+                driver_version           => DriverVersion,
+                pstate                   => PState,
+                pcie_link_gen            => osn:to_number(PCIELinkGen),
+                pcie_link_width          => osn:to_number(PCIELinkWidth),
+                gpu_temperature          => osn:to_number(TempGPU),
+                gpu_utilization          => osn:to_number(UtilizationGPU),
+                mem_total_mb             => osn:to_number(MemTotal),
+                mem_free_mb              => osn:to_number(MemFree),
+                display_mode             => DisplayMode,
+                display_active           => DisplayActive,
+                fan_speed                => osn:to_number(FanSpeed),
+                power_limit_watt         => osn:to_number(PowerLimit),
+                power_limit_default_watt => osn:to_number(PowerLimitDefault)
             } | Acc]
         end,
         [],
