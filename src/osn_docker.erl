@@ -31,14 +31,15 @@ apply(<<"docker/images">>, _Params) ->
     Images;
 
 apply(<<"docker/pull">>, #{<<"Image">> := Image} = _Params) ->
-    Images = apply(<<"docker/images">>, #{}),
-    case lists:any(fun(#{<<"RepoTags">> := RT}) -> RT =/= null andalso lists:member(Image, RT) end, Images) of
-        true -> #{};
-        false ->
-            case docker:p({<<"/images/create">>, [{<<"fromImage">>, Image}]}, #{}, ?TIMEOUT) of
-                {ok, 200, _Message} -> #{};
-                {ok, _Code, Message} ->
-                   {error, Message}
+    case binary:split(Image, <<":">>) of
+        [_Name, <<"latest">>] ->
+            pull_image(Image);
+        _ ->
+            Images = apply(<<"docker/images">>, #{}),
+            case lists:any(fun(#{<<"RepoTags">> := RT}) -> RT =/= null andalso lists:member(Image, RT) end, Images) of
+                true -> #{};
+                false ->
+                    pull_image(Image)
             end
     end;
 
@@ -144,4 +145,11 @@ apply(<<"docker/volume/rm">>, #{<<"Name">> := Name} = _Params) ->
         {ok, Code, _Data} when Code =:= 204; Code =:= 404 ->
             #{};
         {ok, _Code, Error} -> {error, Error}
+    end.
+
+pull_image(Image) ->
+    case docker:p({<<"/images/create">>, [{<<"fromImage">>, Image}]}, #{}, ?TIMEOUT) of
+        {ok, 200, _Message} -> #{};
+        {ok, _Code, Message} ->
+            {error, Message}
     end.
