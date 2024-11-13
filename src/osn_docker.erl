@@ -14,6 +14,14 @@ apply(<<"docker/upload">>, #{<<"Name">> := Name, <<"Path">> := Path, <<"Data">> 
             {error, Message}
     end;
 
+apply(<<"docker/download">>, #{<<"Name">> := Name, <<"Path">> := Path} = _Params) ->
+    case docker:g({<<"/containers/", Name/binary, "/archive">>, [{<<"path">>, Path}]}) of
+        {ok, 200, Data} ->
+            base64:encode(zlib:gzip(Data));
+        {ok, _Code, Message} ->
+            {error, Message}
+    end;
+
 apply(<<"docker/containers/ls">>, _Params) ->
     {ok, 200, Containers} = docker:g(<<"/containers/json">>, ?TIMEOUT),
     Containers;
