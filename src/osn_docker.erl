@@ -40,7 +40,7 @@ apply(<<"docker/images">>, _Params) ->
 
 apply(<<"docker/pull">>, #{<<"Image">> := Image} = Params) ->
     case binary:split(Image, <<":">>) of
-        [_Name, <<"latest">>] ->
+        [_Name, Tag] when Tag =:= <<"latest">>; Tag =:= <<"test">>; Tag =:= <<"dev">> ->
             pull_image(Image, Params);
         _ ->
             Images = apply(<<"docker/images">>, #{}),
